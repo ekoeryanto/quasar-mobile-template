@@ -1,11 +1,7 @@
-import { store } from 'quasar/wrappers'
-import { InjectionKey } from 'vue'
-import {
-  createStore,
-  Store as VuexStore,
-  useStore as vuexUseStore,
-} from 'vuex'
-
+import { createPinia, Pinia } from 'pinia';
+import { unref, Ref } from 'vue';
+import { StoreParams } from '@quasar/app';
+import { HasSsr } from 'quasar';
 // import example from './module-example'
 // import { ExampleStateInterface } from './module-example/state';
 
@@ -18,37 +14,42 @@ import {
  * with the Store instance.
  */
 
-export interface StateInterface {
-  // Define your own store structure, using submodules if needed
-  // example: ExampleStateInterface;
-  // Declared as unknown to avoid linting issue. Best to strongly type as per the line above.
-  example: unknown
+declare module '@quasar/app' {
+  interface QSsrContext {
+    state?: Ref<never> | never | null;
+  }
 }
 
 // provide typings for `this.$store`
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
-    $store: VuexStore<StateInterface>
+    $store: Pinia;
   }
 }
 
-// provide typings for `useStore` helper
-export const storeKey: InjectionKey<VuexStore<StateInterface>> = Symbol('vuex-key')
-
-export default store(function (/* { ssrContext } */) {
-  const Store = createStore<StateInterface>({
-    modules: {
-      // example
-    },
-
-    // enable strict mode (adds overhead!)
-    // for dev mode and --debug builds only
-    strict: !!process.env.DEBUGGING
-  })
-
-  return Store;
-})
-
-export function useStore() {
-  return vuexUseStore(storeKey)
+declare module 'pinia' {
+  interface Pinia {
+    replaceState(state: never): void;
+  }
 }
+
+export default (params: StoreParams) => {
+  const pinia = createPinia();
+
+  if (process.env.SERVER && params?.ssrContext) {
+    params.ssrContext.onRendered(function () {
+      // unwrapping the state for serialization
+      if (params.ssrContext?.state) {
+        params.ssrContext.state = unref(params.ssrContext?.state);
+      }
+    });
+  }
+
+  if (process.env.CLIENT) {
+    pinia.replaceState = function (state: never) {
+      pinia.state.value = state;
+    };
+  }
+
+  return pinia;
+};
