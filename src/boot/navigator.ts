@@ -44,29 +44,17 @@ export default boot(({ app, router, store }) => {
     const fromRootPath = `/${from.path.split('/')[1]}`;
     const toRootPath = `/${to.path.split('/')[1]}`;
 
-    // if we navigated to a different 'section'
-    if (fromRootPath !== toRootPath) {
-      // don't use page transition
-      navigation.usePageTransition = false;
-    }
-    // we navigated to the same section
-    else {
-      // use page transition
-      navigation.usePageTransition = true;
-
-      if (from.path === to.path && to.path !== toRootPath) {
-        router.push(toRootPath);
-      }
+    // if we navigated to a different 'section', don't use page transition
+    navigation.usePageTransition = fromRootPath === toRootPath;
+    if (
+      navigation.usePageTransition &&
+      from.path === to.path &&
+      to.path !== toRootPath
+    ) {
+      router.push(toRootPath);
     }
 
     // update to property on nav item, whenever we change route
-    updateNavItem();
-
-    function updateNavItem() {
-      const navItemIndex = navigation.navItems.findIndex(
-        (navItem) => navItem.root === toRootPath
-      );
-      navigation.navItems[navItemIndex].to = to.path;
-    }
+    navigation.setRoot(toRootPath, to.path);
   });
 });

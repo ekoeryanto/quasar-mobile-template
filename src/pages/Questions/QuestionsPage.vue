@@ -11,13 +11,13 @@
           <q-item v-ripple to="/questions/answer" clickable>
             <q-item-section>How do I do this?</q-item-section>
             <q-item-section avatar>
-              <q-icon color="primary" :name="$q.iconSet.chevron.right" />
+              <q-icon :name="$q.iconSet.chevron.right" />
             </q-item-section>
           </q-item>
           <q-item v-ripple to="/questions/answer" clickable>
             <q-item-section>How do I do that?</q-item-section>
             <q-item-section avatar>
-              <q-icon color="primary" :name="$q.iconSet.chevron.right" />
+              <q-icon :name="$q.iconSet.chevron.right" />
             </q-item-section>
           </q-item>
         </q-list>

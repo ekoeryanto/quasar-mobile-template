@@ -30,4 +30,13 @@ export const useNavigation = defineStore('$navigation', {
     usePageTransition: false,
     iosBrowserSwipingBack: false,
   }),
+  actions: {
+    setRoot(root: string, toPath: string) {
+      const navItemIndex = this.navItems.findIndex(
+        (navItem) => navItem.root === root
+      );
+
+      this.navItems[navItemIndex].to = toPath;
+    },
+  },
 });
